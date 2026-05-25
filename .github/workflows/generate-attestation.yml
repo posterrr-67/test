@@ -39,7 +39,7 @@ jobs:
           else
             echo "value=sha256:$DIGEST" >> "$GITHUB_OUTPUT"
           fi
-
+          
       - name: Generate GitHub attestation
         uses: actions/attest-build-provenance@v2
         with:
