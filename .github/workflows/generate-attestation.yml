@@ -1,0 +1,38 @@
+name: Generate artifact attestation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "master", "work"]
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  build-and-attest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create example build artifact
+        run: |
+          mkdir -p dist
+          printf 'build-at=%s\ncommit=%s\n' "$(date -u +%FT%TZ)" "${GITHUB_SHA}" > dist/build-info.txt
+
+      - name: Upload artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: dist/build-info.txt
+
+      - name: Generate GitHub attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: build-output
+          subject-digest: ${{ steps.upload.outputs.artifact-digest }}
+          push-to-registry: false
